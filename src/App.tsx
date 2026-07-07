@@ -516,8 +516,8 @@ export default function App() {
       <Header avatarIdx={titleIdx} titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
-      {/* List */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 mt-5">
+      {/* List — скрыт когда настройки открыты */}
+      <div className={cn("flex-1 overflow-y-auto space-y-2 pr-0.5 mt-5", showSettings && "hidden")}>
         {meetingsLoading && (
           <div className="flex items-center justify-center gap-2 py-12 text-muted text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> Загружаю…
@@ -559,8 +559,8 @@ export default function App() {
         ))}
       </div>
 
-      {/* Fixed bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+      {/* Fixed bottom button — скрыт когда настройки открыты */}
+      <div className={cn("fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none", showSettings && "hidden")}>
         <button
           onClick={() => { setRecStatus("idle"); setView("recording"); }}
           className="pointer-events-auto flex items-center gap-2.5 rounded-2xl bg-[#1a6ef5] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[#1560d8] active:scale-[0.98] transition-all"
@@ -714,27 +714,30 @@ export default function App() {
       )}
 
       {/* Transcript */}
-      <div className="flex-1 overflow-y-auto rounded-xl border border-white/[0.07] bg-card p-4 shadow-[0_2px_24px_rgba(0,0,0,0.5)]">
+      <div className="flex-1 flex flex-col rounded-xl border border-white/[0.07] bg-card overflow-hidden shadow-[0_2px_24px_rgba(0,0,0,0.5)]">
+        <div className="flex-1 overflow-y-auto p-4">
+          {recStatus === "transcribing" && (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="text-sm">Транскрибирую… пару минут</span>
+            </div>
+          )}
+          {segments.length === 0 && recStatus !== "transcribing" && (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
+              <Mic className="h-10 w-10 opacity-20" />
+              <span className="text-sm">
+                {recStatus === "recording" ? "Идёт запись…" : "Нажми кнопку ниже чтобы начать"}
+              </span>
+            </div>
+          )}
+          <TranscriptView segments={segments} />
+        </div>
+        {/* Copy button — внизу слева, выровнено по колонке timestamp */}
         {segments.length > 0 && (
-          <div className="flex justify-end mb-3">
+          <div className="px-4 pb-3 pt-2 border-t border-white/[0.05]">
             <CopyBtn text={segmentsToText(segments)} />
           </div>
         )}
-        {recStatus === "transcribing" && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span className="text-sm">Транскрибирую… пару минут</span>
-          </div>
-        )}
-        {segments.length === 0 && recStatus !== "transcribing" && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
-            <Mic className="h-10 w-10 opacity-20" />
-            <span className="text-sm">
-              {recStatus === "recording" ? "Идёт запись…" : "Нажми кнопку ниже чтобы начать"}
-            </span>
-          </div>
-        )}
-        <TranscriptView segments={segments} />
       </div>
 
       {savedPath && (
