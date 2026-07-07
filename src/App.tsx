@@ -323,21 +323,16 @@ function DeviceSelect({ label, value, onChange, devices, loading }: {
 
 // ─── Settings panel ───────────────────────────────────────────────────────────
 
-function SettingsPanel({ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading, onClose }: {
+function SettingsPanel({ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }: {
   micHint: string; setMicHint: (v: string) => void;
   sysHint: string; setSysHint: (v: string) => void;
   vaultDir: string; setVaultDir: (v: string) => void;
   modelPath: string; setModelPath: (v: string) => void;
   devices: string[]; devicesLoading: boolean;
-  onClose: () => void;
 }) {
   const inputCls = "mt-1 w-full rounded-lg border border-white/[0.08] bg-[#1e1e25] px-3 py-2 text-sm text-foreground";
   return (
-    <Card className="space-y-3 text-xs text-muted">
-      <div className="flex items-center gap-3 mb-2">
-        <IconBtn icon={ChevronLeft} onClick={onClose} />
-        <span className="text-sm font-semibold text-foreground">Настройки</span>
-      </div>
+    <Card className="space-y-3 text-xs text-muted mt-4">
       <DeviceSelect label="Микрофон" value={micHint} onChange={setMicHint} devices={devices} loading={devicesLoading} />
       <DeviceSelect label="Системный звук (BlackHole)" value={sysHint} onChange={setSysHint} devices={devices} loading={devicesLoading} />
       <label className="block">Папка Obsidian vault<input className={inputCls} value={vaultDir} onChange={(e) => setVaultDir(e.target.value)} /></label>
@@ -498,13 +493,17 @@ export default function App() {
   // ── Shared header ──
   const Header = ({ left, titleNode, avatarIdx }: { left?: React.ReactNode; titleNode?: React.ReactNode; avatarIdx?: number }) => (
     <div className="flex items-center justify-between py-1">
-      <div className="flex items-center gap-3">
-        {left}
-        {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} />}
-        <h1 className="text-[20px] font-bold tracking-tight" style={{ lineHeight: "21px" }}>
-          {titleNode ?? <span>Записи встреч</span>}
-        </h1>
-      </div>
+      {showSettings ? (
+        <IconBtn icon={ChevronLeft} onClick={toggleSettings} />
+      ) : (
+        <div className="flex items-center gap-3">
+          {left}
+          {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} />}
+          <h1 className="text-[20px] font-bold tracking-tight" style={{ lineHeight: "21px" }}>
+            {titleNode ?? <span>Записи встреч</span>}
+          </h1>
+        </div>
+      )}
       <IconBtn icon={Settings} onClick={toggleSettings} />
     </div>
   );
@@ -515,7 +514,7 @@ export default function App() {
   if (view === "home") return (
     <div className="flex h-screen flex-col p-5 pb-28">
       <Header avatarIdx={titleIdx} titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
-      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
+      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
       {/* List */}
       <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 mt-5">
@@ -580,7 +579,7 @@ export default function App() {
       <Header left={
         <IconBtn icon={ChevronLeft} onClick={goHome} />
       } />
-      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
+      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
       {detailMeta && (
         <div className="flex items-center gap-2 px-1">
@@ -659,7 +658,7 @@ export default function App() {
           <IconBtn icon={ChevronLeft} onClick={goHome} />
         ) : undefined
       } />
-      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
+      {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
       {/* Recording status bar */}
       {(recStatus === "recording" || recStatus === "paused") && (
