@@ -120,57 +120,45 @@ function BlurText({ text, className }: { text: string; className?: string }) {
   );
 }
 
-function HadesAvatar() {
-  const flameAnim = (dur: number, delay: number) => ({
-    transformBox: "fill-box" as const,
-    transformOrigin: "50% 100%",
-    animation: `flameDance ${dur}s ease-in-out infinite alternate`,
-    animationDelay: `${delay}s`,
-  });
+// GIF files go in public/gifs/ — drop any Hercules GIF there with these names
+const HERCULES_GIFS = [
+  "/gifs/hades.gif",
+  "/gifs/pain-panic.gif",
+  "/gifs/styx.gif",
+  "/gifs/meg.gif",
+  "/gifs/zeus.gif",
+  "/gifs/charon.gif",
+  "/gifs/hercules.gif",
+  "/gifs/pegasus.gif",
+  "/gifs/hydra.gif",
+  "/gifs/muses.gif",
+];
+
+function HercAvatar({ idx }: { idx: number }) {
+  const [failed, setFailed] = useState(false);
+  const src = HERCULES_GIFS[idx % HERCULES_GIFS.length];
+
+  useEffect(() => { setFailed(false); }, [idx]);
+
   return (
     <div style={{
-      width: 48, height: 48, borderRadius: 99, overflow: "hidden", flexShrink: 0,
+      width: 32, height: 32, borderRadius: 99, overflow: "hidden", flexShrink: 0,
       border: "1.5px solid rgba(120,90,240,0.35)",
+      background: "#0e0820",
     }}>
-      <svg viewBox="0 0 48 48" width="48" height="48" style={{ display: "block" }}>
-        {/* Background */}
-        <circle cx="24" cy="24" r="24" fill="#0e0820" />
-
-        {/* ── Flame hair (blue/teal, bottom-anchored) ── */}
-        {/* far-left */}
-        <ellipse cx="10" cy="14" rx="2.8" ry="7" fill="#818cf8" opacity="0.75" style={flameAnim(0.85, 0.22)} />
-        {/* left */}
-        <ellipse cx="17" cy="10" rx="4"   ry="11" fill="#60a5fa" opacity="0.85" style={flameAnim(0.72, 0.10)} />
-        {/* center tall */}
-        <ellipse cx="24" cy="7"  rx="5"   ry="13" fill="#38bdf8" opacity="0.95" style={flameAnim(0.60, 0)}     />
-        {/* right */}
-        <ellipse cx="31" cy="10" rx="4"   ry="11" fill="#60a5fa" opacity="0.85" style={flameAnim(0.78, 0.15)} />
-        {/* far-right */}
-        <ellipse cx="38" cy="14" rx="2.8" ry="7"  fill="#818cf8" opacity="0.75" style={flameAnim(0.90, 0.28)} />
-
-        {/* ── Face — grey-blue skin ── */}
-        <ellipse cx="24" cy="34" rx="12" ry="15" fill="#5b6e82" />
-        {/* chin point */}
-        <ellipse cx="24" cy="46" rx="6"  ry="5"  fill="#5b6e82" />
-
-        {/* ── Dark toga/collar ── */}
-        <path d="M10 44 Q24 50 38 44 L48 48 L0 48 Z" fill="#0e0820" opacity="0.9" />
-        <path d="M18 42 L24 47 L30 42" fill="#0e0820" opacity="0.8" />
-
-        {/* ── Yellow glowing eyes ── */}
-        <ellipse cx="19" cy="31" rx="3"   ry="3.5" fill="#fbbf24" />
-        <ellipse cx="29" cy="31" rx="3"   ry="3.5" fill="#fbbf24" />
-        {/* pupil glow */}
-        <ellipse cx="19" cy="31" rx="1.4" ry="1.7" fill="#fef3c7" />
-        <ellipse cx="29" cy="31" rx="1.4" ry="1.7" fill="#fef3c7" />
-
-        {/* ── Evil arched eyebrows ── */}
-        <path d="M14.5 27 Q19 25 23 27"   stroke="#1e1b4b" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-        <path d="M25 27 Q29 25 33.5 27"   stroke="#1e1b4b" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-
-        {/* ── Sly smirk ── */}
-        <path d="M17 38 Q24 43 31 38" stroke="#1e1b4b" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-      </svg>
+      {failed ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+          🔥
+        </div>
+      ) : (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          onError={() => setFailed(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      )}
     </div>
   );
 }
@@ -508,11 +496,11 @@ export default function App() {
   const goHome = () => { setView("home"); setShowSettings(false); setTitleIdx(0); };
 
   // ── Shared header ──
-  const Header = ({ left, titleNode, avatar }: { left?: React.ReactNode; titleNode?: React.ReactNode; avatar?: boolean }) => (
+  const Header = ({ left, titleNode, avatarIdx }: { left?: React.ReactNode; titleNode?: React.ReactNode; avatarIdx?: number }) => (
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-3">
         {left}
-        {avatar && <HadesAvatar />}
+        {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} />}
         <h1 className="text-[20px] font-bold tracking-tight" style={{ lineHeight: "21px" }}>
           {titleNode ?? <span>Записи встреч</span>}
         </h1>
@@ -526,7 +514,7 @@ export default function App() {
   // ══════════════════════════════════════
   if (view === "home") return (
     <div className="flex h-screen flex-col p-5 pb-28">
-      <Header avatar titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
+      <Header avatarIdx={titleIdx} titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
 
       {/* List */}
