@@ -34,13 +34,15 @@ struct MeetingMeta {
     date: String,
     duration_min: u64,
     preview: String,
+    title: String,
 }
 
-fn parse_frontmatter(content: &str) -> (String, u64) {
+fn parse_frontmatter(content: &str) -> (String, u64, String) {
     let mut date = String::new();
     let mut duration_min = 0u64;
+    let mut title = String::new();
     if !content.starts_with("---\n") {
-        return (date, duration_min);
+        return (date, duration_min, title);
     }
     if let Some(end) = content[4..].find("\n---") {
         let fm = &content[4..4 + end];
@@ -51,9 +53,12 @@ fn parse_frontmatter(content: &str) -> (String, u64) {
             if let Some(v) = line.strip_prefix("duration: ") {
                 duration_min = v.trim().trim_end_matches('m').parse().unwrap_or(0);
             }
+            if let Some(v) = line.strip_prefix("title: ") {
+                title = v.trim().to_string();
+            }
         }
     }
-    (date, duration_min)
+    (date, duration_min, title)
 }
 
 fn extract_preview(content: &str) -> String {
@@ -92,7 +97,7 @@ fn list_meetings(vault_dir: String) -> Vec<MeetingMeta> {
             let path = e.path();
             let content = std::fs::read_to_string(&path).ok()?;
             let filename = path.file_name()?.to_str()?.to_string();
-            let (date, duration_min) = parse_frontmatter(&content);
+            let (date, duration_min, title) = parse_frontmatter(&content);
             let preview = extract_preview(&content);
             Some(MeetingMeta {
                 path: path.to_str()?.to_string(),
@@ -100,6 +105,7 @@ fn list_meetings(vault_dir: String) -> Vec<MeetingMeta> {
                 date,
                 duration_min,
                 preview,
+                title,
             })
         })
         .collect();
@@ -188,15 +194,15 @@ fn stop_and_transcribe(
 }
 
 #[tauri::command]
-async fn generate_summary(transcript: String) -> Result<String, String> {
+async fn generate_summary(transcript: String) -> Result<summary::SummaryResult, String> {
     summary::generate_summary(&transcript)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn update_summary_in_vault(path: String, summary: String) -> Result<(), String> {
-    export::update_with_summary(&path, &summary).map_err(|e| e.to_string())
+fn update_summary_in_vault(path: String, summary: String, title: String) -> Result<(), String> {
+    export::update_with_summary(&path, &summary, &title).map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

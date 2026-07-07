@@ -34,14 +34,43 @@ pub fn save_to_vault(vault_dir: &str, segments: &[Segment], duration_min: u64) -
     Ok(filename)
 }
 
-/// Вставляет или заменяет блок Summary в сохранённом файле.
-/// Summary идёт первым — перед ## Транскрипт.
-pub fn update_with_summary(path: &str, summary: &str) -> Result<()> {
+/// Обновляет или добавляет поле в frontmatter YAML.
+fn set_frontmatter_field(content: &str, field: &str, value: &str) -> String {
+    if !content.starts_with("---\n") {
+        return content.to_string();
+    }
+    let Some(fm_end) = content[4..].find("\n---") else {
+        return content.to_string();
+    };
+    let fm = &content[4..4 + fm_end];
+    let prefix = format!("{field}: ");
+    let new_fm = if fm.lines().any(|l| l.starts_with(&prefix)) {
+        fm.lines()
+            .map(|l| if l.starts_with(&prefix) { format!("{field}: {value}") } else { l.to_string() })
+            .collect::<Vec<_>>()
+            .join("\n")
+    } else {
+        format!("{fm}\n{field}: {value}")
+    };
+    // +4 for "\n---", then skip past "\n---\n" = +5 more chars... let's just rebuild
+    let after_fm = &content[4 + fm_end + 4..]; // skip "\n---\n"
+    format!("---\n{new_fm}\n---\n{after_fm}")
+}
+
+/// Вставляет/заменяет Summary в файле и обновляет title в frontmatter.
+pub fn update_with_summary(path: &str, summary: &str, title: &str) -> Result<()> {
     let content = std::fs::read_to_string(path)?;
+
+    // Update title in frontmatter
+    let content = if !title.is_empty() {
+        set_frontmatter_field(&content, "title", title)
+    } else {
+        content
+    };
+
     let summary_block = format!("## Summary\n\n{summary}\n\n---\n\n");
 
     let updated = if content.contains("## Summary\n") {
-        // Заменяем существующий блок Summary
         if let (Some(start), Some(rel_end)) = (
             content.find("## Summary\n"),
             content
