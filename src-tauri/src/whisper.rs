@@ -7,8 +7,14 @@
 //   модель скачивается в ./models/ggml-large-v3-turbo.bin
 
 use anyhow::{anyhow, Result};
+use hound::WavReader;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+
+// RMS < 0.01 от пика i16 (~328 из 32768) — считаем тишиной.
+// Порог подобран так чтобы отсекать пустой BlackHole и тихий фон,
+// но не трогать тихую речь (RMS речи обычно > 0.03).
+const SILENCE_RMS_THRESHOLD: f64 = 0.01;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Segment {
@@ -18,8 +24,46 @@ pub struct Segment {
     pub text: String,
 }
 
+/// Возвращает нормализованный RMS [0.0, 1.0] по всем сэмплам WAV.
+/// Поддерживает i16 и f32 треки; всё остальное → 0.0.
+fn wav_rms(wav_path: &str) -> f64 {
+    let Ok(mut reader) = WavReader::open(wav_path) else {
+        return 0.0;
+    };
+    let spec = reader.spec();
+    match spec.sample_format {
+        hound::SampleFormat::Int => {
+            let peak = (1i64 << (spec.bits_per_sample - 1)) as f64;
+            let mut sum = 0f64;
+            let mut count = 0u64;
+            for s in reader.samples::<i32>().flatten() {
+                sum += (s as f64 / peak).powi(2);
+                count += 1;
+            }
+            if count == 0 { 0.0 } else { (sum / count as f64).sqrt() }
+        }
+        hound::SampleFormat::Float => {
+            let mut sum = 0f64;
+            let mut count = 0u64;
+            for s in reader.samples::<f32>().flatten() {
+                sum += (s as f64).powi(2);
+                count += 1;
+            }
+            if count == 0 { 0.0 } else { (sum / count as f64).sqrt() }
+        }
+    }
+}
+
 /// Запускает whisper-cli на одном WAV и возвращает сегменты с меткой спикера.
+/// Если WAV тихий/пустой — возвращает пустой вектор без запуска whisper.
 pub fn transcribe(wav_path: &str, model_path: &str, speaker: &str, language: &str) -> Result<Vec<Segment>> {
+    let rms = wav_rms(wav_path);
+    eprintln!("VAD rms({speaker})={rms:.4}");
+    if rms < SILENCE_RMS_THRESHOLD {
+        eprintln!("VAD: тишина на канале {speaker}, пропускаем whisper");
+        return Ok(vec![]);
+    }
+
     // -oj => вывод JSON рядом с wav (file.wav.json)
     let output = Command::new("whisper-cli")
         .args([

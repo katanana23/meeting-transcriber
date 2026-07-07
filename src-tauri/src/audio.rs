@@ -108,6 +108,11 @@ fn spawn_capture(
 static WRITERS: Mutex<Vec<(String, Arc<Mutex<Option<WavWriter<BufWriter<File>>>>>)>> =
     Mutex::new(Vec::new());
 
+// cpal::Stream on CoreAudio is !Send due to FnMut callback wrappers, but our callbacks
+// only capture Arc<AtomicBool> and Arc<Mutex<...>> which are Send. After play() is called
+// we never call Stream methods from multiple threads — Mutex in AppState serialises access.
+unsafe impl Send for Recorder {}
+
 impl Recorder {
     /// mic_hint — подстрока имени микрофона (напр. "AirPods"), sys_hint — "BlackHole".
     pub fn start(mic_hint: &str, sys_hint: &str, out_dir: &str) -> Result<(Self, RecorderHandles)> {

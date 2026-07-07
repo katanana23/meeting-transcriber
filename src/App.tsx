@@ -37,10 +37,10 @@ export default function App() {
   const [micHint, setMicHint] = useState(localStorage.getItem("micHint") || "AirPods");
   const [sysHint, setSysHint] = useState(localStorage.getItem("sysHint") || "BlackHole");
   const [vaultDir, setVaultDir] = useState(
-    localStorage.getItem("vaultDir") || "/Users/aidyn/Obsidian/00 Inbox"
+    localStorage.getItem("vaultDir") || "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Dracula/00 Inbox"
   );
   const [modelPath, setModelPath] = useState(
-    localStorage.getItem("modelPath") || "models/ggml-large-v3-turbo.bin"
+    localStorage.getItem("modelPath") || "~/Downloads/meeting-transcriber/models/ggml-large-v3-turbo.bin"
   );
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
