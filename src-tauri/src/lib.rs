@@ -1,7 +1,6 @@
-// lib.rs — Tauri-команды, связывающие frontend и аудио/транскрипцию.
-
 mod audio;
 mod export;
+mod summary;
 mod whisper;
 
 use audio::{Recorder, RecorderHandles};
@@ -26,6 +25,93 @@ struct AppState {
 struct TranscriptResult {
     segments: Vec<Segment>,
     saved_path: String,
+}
+
+#[derive(Serialize)]
+struct MeetingMeta {
+    path: String,
+    filename: String,
+    date: String,
+    duration_min: u64,
+    preview: String,
+}
+
+fn parse_frontmatter(content: &str) -> (String, u64) {
+    let mut date = String::new();
+    let mut duration_min = 0u64;
+    if !content.starts_with("---\n") {
+        return (date, duration_min);
+    }
+    if let Some(end) = content[4..].find("\n---") {
+        let fm = &content[4..4 + end];
+        for line in fm.lines() {
+            if let Some(v) = line.strip_prefix("date: ") {
+                date = v.trim().to_string();
+            }
+            if let Some(v) = line.strip_prefix("duration: ") {
+                duration_min = v.trim().trim_end_matches('m').parse().unwrap_or(0);
+            }
+        }
+    }
+    (date, duration_min)
+}
+
+fn extract_preview(content: &str) -> String {
+    // Find first **[time] speaker:** text pattern and return the text part
+    if let Some(start) = content.find("**[") {
+        if let Some(colon) = content[start..].find(":** ") {
+            let text_start = start + colon + 4;
+            return content[text_start..]
+                .chars()
+                .take(100)
+                .collect::<String>()
+                .trim_end_matches('\n')
+                .to_string();
+        }
+    }
+    String::new()
+}
+
+#[tauri::command]
+fn list_meetings(vault_dir: String) -> Vec<MeetingMeta> {
+    let vault_dir = expand_path(&vault_dir);
+    let Ok(entries) = std::fs::read_dir(&vault_dir) else {
+        return vec![];
+    };
+
+    let mut meetings: Vec<MeetingMeta> = entries
+        .filter_map(|e| e.ok())
+        .filter(|e| {
+            e.path()
+                .file_name()
+                .and_then(|n| n.to_str())
+                .map(|n| n.ends_with("_meeting.md"))
+                .unwrap_or(false)
+        })
+        .filter_map(|e| {
+            let path = e.path();
+            let content = std::fs::read_to_string(&path).ok()?;
+            let filename = path.file_name()?.to_str()?.to_string();
+            let (date, duration_min) = parse_frontmatter(&content);
+            let preview = extract_preview(&content);
+            Some(MeetingMeta {
+                path: path.to_str()?.to_string(),
+                filename,
+                date,
+                duration_min,
+                preview,
+            })
+        })
+        .collect();
+
+    // Filenames start with YYYY-MM-DD_HHMM — descending sort = newest first
+    meetings.sort_by(|a, b| b.filename.cmp(&a.filename));
+    meetings
+}
+
+#[tauri::command]
+fn read_meeting(path: String) -> Result<String, String> {
+    std::fs::read_to_string(&path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -101,6 +187,18 @@ fn stop_and_transcribe(
     Ok(TranscriptResult { segments, saved_path })
 }
 
+#[tauri::command]
+async fn generate_summary(transcript: String) -> Result<String, String> {
+    summary::generate_summary(&transcript)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_summary_in_vault(path: String, summary: String) -> Result<(), String> {
+    export::update_with_summary(&path, &summary).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -109,10 +207,14 @@ pub fn run() {
         .manage(AppState { recorder: Mutex::new(None) })
         .invoke_handler(tauri::generate_handler![
             list_devices,
+            list_meetings,
+            read_meeting,
             start_recording,
             pause_recording,
             resume_recording,
-            stop_and_transcribe
+            stop_and_transcribe,
+            generate_summary,
+            update_summary_in_vault,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

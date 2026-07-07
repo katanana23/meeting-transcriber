@@ -5,18 +5,41 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "hsl(240 10% 4%)",
-        foreground: "hsl(0 0% 98%)",
-        card: "hsl(240 10% 8%)",
-        border: "hsl(240 6% 16%)",
-        muted: "hsl(240 5% 55%)",
-        primary: "hsl(0 0% 98%)",
-        accent: "hsl(24 70% 55%)",
-        me: "hsl(200 80% 60%)",
-        them: "hsl(140 55% 55%)"
+        background: "#0c0c0f",
+        foreground: "#f0f0f5",
+        card:       "#17171c",
+        "card-2":   "#1e1e25",
+        border:     "rgba(255,255,255,0.07)",
+        muted:      "#7a7a8a",
+        primary:    "#f0f0f5",
+        me:         "#28c96a",
+        them:       "#7c7af5",
       },
-      borderRadius: { lg: "12px", md: "10px", sm: "8px" }
-    }
+      borderRadius: {
+        sm:   "8px",
+        md:   "12px",
+        lg:   "16px",
+        xl:   "20px",
+        "2xl": "24px",
+        "3xl": "32px",
+      },
+      fontFamily: {
+        mono: ['"JetBrains Mono"', "monospace"],
+      },
+      boxShadow: {
+        card: "0 2px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+        bento: "0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)",
+      },
+      animation: {
+        "pulse-dot": "pulse-dot 1.8s ease-in-out infinite",
+      },
+      keyframes: {
+        "pulse-dot": {
+          "0%, 100%": { opacity: "1" },
+          "50%":      { opacity: "0.3" },
+        },
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };

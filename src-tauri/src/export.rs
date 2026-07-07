@@ -1,5 +1,3 @@
-// export.rs — сохранение транскрипта в Obsidian-совместимый Markdown.
-
 use crate::whisper::Segment;
 use anyhow::Result;
 use chrono::Local;
@@ -12,7 +10,7 @@ fn fmt_ts(ms: u64) -> String {
 pub fn to_markdown(segments: &[Segment], duration_min: u64) -> String {
     let date = Local::now().format("%Y-%m-%d");
     let mut md = format!(
-        "---\ntags: [meeting-transcript]\ndate: {date}\nduration: {duration_min}m\n---\n\n# Встреча {date}\n\n"
+        "---\ntags: [meeting-transcript]\ndate: {date}\nduration: {duration_min}m\n---\n\n# Встреча {date}\n\n## Транскрипт\n\n"
     );
     for seg in segments {
         md.push_str(&format!(
@@ -34,4 +32,34 @@ pub fn save_to_vault(vault_dir: &str, segments: &[Segment], duration_min: u64) -
     );
     std::fs::write(&filename, to_markdown(segments, duration_min))?;
     Ok(filename)
+}
+
+/// Вставляет или заменяет блок Summary в сохранённом файле.
+/// Summary идёт первым — перед ## Транскрипт.
+pub fn update_with_summary(path: &str, summary: &str) -> Result<()> {
+    let content = std::fs::read_to_string(path)?;
+    let summary_block = format!("## Summary\n\n{summary}\n\n---\n\n");
+
+    let updated = if content.contains("## Summary\n") {
+        // Заменяем существующий блок Summary
+        if let (Some(start), Some(rel_end)) = (
+            content.find("## Summary\n"),
+            content
+                .find("## Summary\n")
+                .and_then(|s| content[s..].find("## Транскрипт\n").map(|e| (s, e)))
+                .map(|(_s, e)| e),
+        ) {
+            let end = content.find("## Summary\n").unwrap() + rel_end;
+            format!("{}{}{}", &content[..start], summary_block, &content[end..])
+        } else {
+            content.replacen("## Summary\n", &format!("{summary_block}## Транскрипт\n"), 1)
+        }
+    } else if let Some(pos) = content.find("## Транскрипт\n") {
+        format!("{}{}{}", &content[..pos], summary_block, &content[pos..])
+    } else {
+        format!("{content}\n\n{summary_block}")
+    };
+
+    std::fs::write(path, updated)?;
+    Ok(())
 }

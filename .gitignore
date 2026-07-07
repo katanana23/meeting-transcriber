@@ -4,3 +4,5 @@ src-tauri/target
 recordings/*.wav
 models/*.bin
 .DS_Store
+.env
+src-tauri/.env

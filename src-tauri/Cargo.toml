@@ -17,6 +17,8 @@ hound = "3.5"
 chrono = "0.4"
 anyhow = "1"
 parking_lot = "0.12"
+dotenvy = "0.15"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 
 [lib]
 name = "meeting_transcriber_lib"
