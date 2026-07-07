@@ -82,35 +82,83 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
 
 const HADES_TITLES = [
   "Записи встреч",
-  "Аид злится снова",
-  "Стикс не течёт",
-  "Боги меня бесят",
-  "Пейн всё испортил",
-  "Паника в офисе",
-  "Харон взял отгул",
-  "Смерть подождёт нас",
-  "Аид не спит",
-  "Мегара всё знает",
+  "Пейн и Паника\nснова всё сломали",
+  "Стикс вышел\nиз берегов снова",
+  "Мой план\nбыл так хорош",
+  "Зевс испортил\nвсё как обычно",
+  "Харон ушёл\nна перерыв опять",
+  "Подземный мир\nждёт вас всех",
+  "Мегара знает\nАид волнуется",
+  "Гидра выросла\nопять без спроса",
+  "Горим ярко\nкак моя карьера",
 ];
 
 function BlurText({ text, className }: { text: string; className?: string }) {
+  const lines = text.split("\n");
+  let idx = 0;
   return (
     <span className={className}>
-      {text.split("").map((char, i) => (
-        <span
-          key={i}
-          style={{
-            display: "inline-block",
-            whiteSpace: "pre",
-            opacity: 0,
-            animation: "blurIn 0.8s forwards",
-            animationDelay: `${i * 0.05}s`,
-          }}
-        >
-          {char}
+      {lines.map((line, li) => (
+        <span key={li} style={{ display: "block" }}>
+          {line.split("").map((char) => {
+            const i = idx++;
+            return (
+              <span key={i} style={{
+                display: "inline-block",
+                whiteSpace: "pre",
+                opacity: 0,
+                animation: "blurIn 0.8s forwards",
+                animationDelay: `${i * 0.05}s`,
+              }}>
+                {char}
+              </span>
+            );
+          })}
         </span>
       ))}
     </span>
+  );
+}
+
+const FLAME_COLORS = ["#38bdf8", "#60a5fa", "#818cf8", "#38bdf8", "#a5f3fc"];
+
+function HadesAvatar() {
+  return (
+    <div className="relative shrink-0" style={{ width: 48, height: 56 }}>
+      {/* Blue flames above the circle */}
+      <div className="absolute left-0 right-0 flex justify-center items-end" style={{ top: 0, height: 20 }}>
+        {FLAME_COLORS.map((color, i) => (
+          <div
+            key={i}
+            style={{
+              width: i === 2 ? 9 : 6,
+              height: i === 2 ? 20 : i % 2 === 0 ? 14 : 17,
+              margin: "0 1px",
+              borderRadius: "50% 50% 25% 25%",
+              background: color,
+              opacity: 0.9,
+              animation: `flameDance ${0.55 + i * 0.08}s ease-in-out infinite alternate`,
+              animationDelay: `${i * 0.07}s`,
+              transformOrigin: "bottom center",
+            }}
+          />
+        ))}
+      </div>
+      {/* Circle face */}
+      <div className="absolute left-0 right-0 bottom-0" style={{ height: 44 }}>
+        <svg viewBox="0 0 44 44" width="44" height="44">
+          {/* Face circle */}
+          <circle cx="22" cy="22" r="21" fill="#1a1050" stroke="rgba(100,80,220,0.35)" strokeWidth="1.5" />
+          {/* Glowing eyes */}
+          <ellipse cx="15" cy="20" rx="2.5" ry="3" fill="#60a5fa" />
+          <ellipse cx="29" cy="20" rx="2.5" ry="3" fill="#60a5fa" />
+          <ellipse cx="15" cy="20" rx="1.2" ry="1.5" fill="#bfdbfe" />
+          <ellipse cx="29" cy="20" rx="1.2" ry="1.5" fill="#bfdbfe" />
+          {/* Smirk */}
+          <path d="M14 29 Q22 34 30 29" stroke="#818cf8" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
   );
 }
 
@@ -447,11 +495,12 @@ export default function App() {
   const goHome = () => { setView("home"); setShowSettings(false); setTitleIdx(0); };
 
   // ── Shared header ──
-  const Header = ({ left, titleNode }: { left?: React.ReactNode; titleNode?: React.ReactNode }) => (
+  const Header = ({ left, titleNode, avatar }: { left?: React.ReactNode; titleNode?: React.ReactNode; avatar?: boolean }) => (
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-3">
         {left}
-        <h1 className="text-2xl font-bold tracking-tight">
+        {avatar && <HadesAvatar />}
+        <h1 className="text-[20px] font-bold leading-snug tracking-tight">
           {titleNode ?? <span>Записи встреч</span>}
         </h1>
       </div>
@@ -464,7 +513,7 @@ export default function App() {
   // ══════════════════════════════════════
   if (view === "home") return (
     <div className="flex h-screen flex-col p-5 pb-28">
-      <Header titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
+      <Header avatar titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
 
       {/* List */}
