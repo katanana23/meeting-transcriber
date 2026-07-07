@@ -80,6 +80,27 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
   );
 }
 
+function BlurText({ text, className }: { text: string; className?: string }) {
+  return (
+    <span className={className}>
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          style={{
+            display: "inline-block",
+            whiteSpace: "pre",
+            opacity: 0,
+            animation: "blurIn 0.8s forwards",
+            animationDelay: `${i * 0.05}s`,
+          }}
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function IconBtn({ icon: Icon, onClick, className }: {
   icon: React.ComponentType<{ className?: string }>;
   onClick?: () => void; className?: string;
@@ -409,7 +430,9 @@ export default function App() {
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-3">
         {left}
-        <h1 className="text-[15px] font-semibold tracking-tight">Записи встреч</h1>
+        <h1 className="text-[15px] font-semibold tracking-tight">
+          <BlurText text="Записи встреч" />
+        </h1>
       </div>
       <IconBtn icon={Settings} onClick={toggleSettings} />
     </div>
