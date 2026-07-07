@@ -80,6 +80,24 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
   );
 }
 
+function IconBtn({ icon: Icon, onClick, className }: {
+  icon: React.ComponentType<{ className?: string }>;
+  onClick?: () => void; className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl",
+        "bg-white/[0.06] hover:bg-white/[0.10] transition-all duration-100 active:scale-[0.94]",
+        className
+      )}
+    >
+      <Icon className="h-5 w-5 text-muted" />
+    </button>
+  );
+}
+
 // ─── Bento button ─────────────────────────────────────────────────────────────
 
 function BentoBtn({
@@ -233,11 +251,9 @@ function SettingsPanel({ micHint, setMicHint, sysHint, setSysHint, vaultDir, set
   const inputCls = "mt-1 w-full rounded-lg border border-white/[0.08] bg-[#1e1e25] px-3 py-2 text-sm text-foreground";
   return (
     <Card className="space-y-3 text-xs text-muted">
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center gap-3 mb-1">
+        <IconBtn icon={ArrowLeft} onClick={onClose} />
         <span className="text-xs font-semibold uppercase tracking-wider text-muted">Настройки</span>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
       </div>
       <DeviceSelect label="Микрофон" value={micHint} onChange={setMicHint} devices={devices} loading={devicesLoading} />
       <DeviceSelect label="Системный звук (BlackHole)" value={sysHint} onChange={setSysHint} devices={devices} loading={devicesLoading} />
@@ -395,9 +411,7 @@ export default function App() {
         {left}
         <h1 className="text-[15px] font-semibold tracking-tight">Aid AI Meeting Assistant</h1>
       </div>
-      <Button variant="ghost" size="icon" onClick={toggleSettings}>
-        <Settings className="h-4 w-4" />
-      </Button>
+      <IconBtn icon={Settings} onClick={toggleSettings} />
     </div>
   );
 
@@ -465,9 +479,7 @@ export default function App() {
   if (view === "detail") return (
     <div className="flex h-screen flex-col p-5 gap-2">
       <Header left={
-        <Button variant="ghost" size="icon" onClick={goHome}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        <IconBtn icon={ArrowLeft} onClick={goHome} />
       } />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
 
