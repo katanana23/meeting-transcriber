@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Mic, Square, Pause, Play, Settings, Loader2,
-  ChevronDown, ChevronUp, Sparkles, ArrowLeft, Plus, Clock, FileText,
+  ChevronDown, ChevronUp, ChevronLeft, Sparkles, Plus, Clock, FileText,
   Copy, Check,
 } from "lucide-react";
 
@@ -88,7 +88,7 @@ function IconBtn({ icon: Icon, onClick, className }: {
     <button
       onClick={onClick}
       className={cn(
-        "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl",
+        "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
         "bg-white/[0.06] hover:bg-white/[0.10] transition-all duration-100 active:scale-[0.94]",
         className
       )}
@@ -251,9 +251,9 @@ function SettingsPanel({ micHint, setMicHint, sysHint, setSysHint, vaultDir, set
   const inputCls = "mt-1 w-full rounded-lg border border-white/[0.08] bg-[#1e1e25] px-3 py-2 text-sm text-foreground";
   return (
     <Card className="space-y-3 text-xs text-muted">
-      <div className="flex items-center gap-3 mb-1">
-        <IconBtn icon={ArrowLeft} onClick={onClose} />
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted">Настройки</span>
+      <div className="flex items-center gap-3 mb-2">
+        <IconBtn icon={ChevronLeft} onClick={onClose} />
+        <span className="text-sm font-semibold text-foreground">Настройки</span>
       </div>
       <DeviceSelect label="Микрофон" value={micHint} onChange={setMicHint} devices={devices} loading={devicesLoading} />
       <DeviceSelect label="Системный звук (BlackHole)" value={sysHint} onChange={setSysHint} devices={devices} loading={devicesLoading} />
@@ -407,7 +407,7 @@ export default function App() {
   // ── Shared header ──
   const Header = ({ left }: { left?: React.ReactNode }) => (
     <div className="flex items-center justify-between py-1">
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-3">
         {left}
         <h1 className="text-[15px] font-semibold tracking-tight">Записи встреч</h1>
       </div>
@@ -479,7 +479,7 @@ export default function App() {
   if (view === "detail") return (
     <div className="flex h-screen flex-col p-5 gap-2">
       <Header left={
-        <IconBtn icon={ArrowLeft} onClick={goHome} />
+        <IconBtn icon={ChevronLeft} onClick={goHome} />
       } />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
 
@@ -557,9 +557,7 @@ export default function App() {
     <div className="flex h-screen flex-col gap-3 p-5">
       <Header left={
         (recStatus === "idle" || recStatus === "done") ? (
-          <Button variant="ghost" size="icon" onClick={goHome}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <IconBtn icon={ChevronLeft} onClick={goHome} />
         ) : undefined
       } />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
