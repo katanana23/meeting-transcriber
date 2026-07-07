@@ -409,7 +409,7 @@ export default function App() {
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-1.5">
         {left}
-        <h1 className="text-[15px] font-semibold tracking-tight">Aid AI Meeting Assistant</h1>
+        <h1 className="text-[15px] font-semibold tracking-tight">Записи встреч</h1>
       </div>
       <IconBtn icon={Settings} onClick={toggleSettings} />
     </div>
