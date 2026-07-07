@@ -80,7 +80,18 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
   );
 }
 
+// Module-level flag — анимация заголовка только при первом запуске приложения
+let _headingAnimated = false;
+
 function BlurText({ text, className }: { text: string; className?: string }) {
+  const [animate] = useState(() => {
+    if (_headingAnimated) return false;
+    _headingAnimated = true;
+    return true;
+  });
+
+  if (!animate) return <span className={className}>{text}</span>;
+
   return (
     <span className={className}>
       {text.split("").map((char, i) => (
@@ -90,8 +101,8 @@ function BlurText({ text, className }: { text: string; className?: string }) {
             display: "inline-block",
             whiteSpace: "pre",
             opacity: 0,
-            animation: "blurIn 0.8s forwards",
-            animationDelay: `${i * 0.05}s`,
+            animation: "blurIn 0.5s forwards",
+            animationDelay: `${i * 0.03}s`,
           }}
         >
           {char}
@@ -459,10 +470,15 @@ export default function App() {
             <span className="text-sm">Встреч пока нет</span>
           </div>
         )}
-        {meetings.map((m) => (
+        {meetings.map((m, idx) => (
           <button
             key={m.path}
             onClick={() => openMeeting(m)}
+            style={{
+              opacity: 0,
+              animation: "blurIn 0.5s forwards",
+              animationDelay: `${idx * 0.06}s`,
+            }}
             className={cn(
               "w-full text-left rounded-xl border border-white/[0.07] bg-card px-4 py-3.5",
               "shadow-[0_2px_16px_rgba(0,0,0,0.4)]",
