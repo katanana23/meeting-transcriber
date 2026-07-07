@@ -80,18 +80,20 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
   );
 }
 
-// Module-level flag — анимация заголовка только при первом запуске приложения
-let _headingAnimated = false;
+const HADES_TITLES = [
+  "Записи встреч",
+  "Аид злится снова",
+  "Стикс не течёт",
+  "Боги меня бесят",
+  "Пейн всё испортил",
+  "Паника в офисе",
+  "Харон взял отгул",
+  "Смерть подождёт нас",
+  "Аид не спит",
+  "Мегара всё знает",
+];
 
 function BlurText({ text, className }: { text: string; className?: string }) {
-  const [animate] = useState(() => {
-    if (_headingAnimated) return false;
-    _headingAnimated = true;
-    return true;
-  });
-
-  if (!animate) return <span className={className}>{text}</span>;
-
   return (
     <span className={className}>
       {text.split("").map((char, i) => (
@@ -101,8 +103,8 @@ function BlurText({ text, className }: { text: string; className?: string }) {
             display: "inline-block",
             whiteSpace: "pre",
             opacity: 0,
-            animation: "blurIn 0.5s forwards",
-            animationDelay: `${i * 0.03}s`,
+            animation: "blurIn 0.8s forwards",
+            animationDelay: `${i * 0.05}s`,
           }}
         >
           {char}
@@ -434,15 +436,23 @@ export default function App() {
     } catch (e) { setSummaryError(String(e)); setSummaryStatus("error"); }
   };
 
-  const goHome = () => { setView("home"); setShowSettings(false); };
+  const [titleIdx, setTitleIdx] = useState(0);
+
+  useEffect(() => {
+    if (view !== "home") return;
+    const id = setInterval(() => setTitleIdx((i) => (i + 1) % HADES_TITLES.length), 5000);
+    return () => clearInterval(id);
+  }, [view]);
+
+  const goHome = () => { setView("home"); setShowSettings(false); setTitleIdx(0); };
 
   // ── Shared header ──
-  const Header = ({ left }: { left?: React.ReactNode }) => (
+  const Header = ({ left, titleNode }: { left?: React.ReactNode; titleNode?: React.ReactNode }) => (
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-3">
         {left}
-        <h1 className="text-[15px] font-semibold tracking-tight">
-          <BlurText text="Записи встреч" />
+        <h1 className="text-2xl font-bold tracking-tight">
+          {titleNode ?? <span>Записи встреч</span>}
         </h1>
       </div>
       <IconBtn icon={Settings} onClick={toggleSettings} />
@@ -454,11 +464,11 @@ export default function App() {
   // ══════════════════════════════════════
   if (view === "home") return (
     <div className="flex h-screen flex-col p-5 pb-28">
-      <Header />
+      <Header titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} onClose={toggleSettings} />}
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 mt-3">
+      <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 mt-5">
         {meetingsLoading && (
           <div className="flex items-center justify-center gap-2 py-12 text-muted text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> Загружаю…
