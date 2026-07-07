@@ -575,74 +575,76 @@ export default function App() {
   // DETAIL
   // ══════════════════════════════════════
   if (view === "detail") return (
-    <div className="flex h-screen flex-col p-5 gap-2">
-      <Header left={
-        <IconBtn icon={ChevronLeft} onClick={goHome} />
-      } />
+    <div className="flex h-screen flex-col p-5">
+      <Header left={<IconBtn icon={ChevronLeft} onClick={goHome} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
-      {detailMeta && (
-        <div className="flex items-center gap-2 px-1">
-          <span className="text-sm font-semibold">{detailMeta.date || detailMeta.filename.slice(0, 10)}</span>
-          {detailMeta.duration_min > 0 && (
-            <span className="flex items-center gap-1 text-xs text-muted"><Clock className="h-3 w-3" />{detailMeta.duration_min} мин</span>
-          )}
-        </div>
-      )}
-
-      {detailLoading ? (
-        <div className="flex flex-1 items-center justify-center gap-2 text-muted text-sm">
-          <Loader2 className="h-4 w-4 animate-spin" /> Загружаю…
-        </div>
-      ) : (
+      {!showSettings && (
         <>
-          {/* Summary — always-visible collapsible bar */}
-          <div className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5">
-            <div className="flex items-center justify-between">
-              <button
-                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted"
-                onClick={() => setDetailSummaryCollapsed((c) => !c)}
-                disabled={!detailParsed.summary}
-              >
-                Summary
-                {detailParsed.summary && (
-                  detailSummaryCollapsed
-                    ? <ChevronDown className="h-3.5 w-3.5" />
-                    : <ChevronUp className="h-3.5 w-3.5" />
-                )}
-              </button>
-              <div className="flex items-center gap-1.5">
-                {detailSummaryStatus === "error" && (
-                  <span className="text-[10px] text-red-400">{detailSummaryError}</span>
-                )}
-                {detailParsed.summary && (
-                  <CopyBtn text={detailParsed.summary} />
-                )}
-                <ActionBtn
-                  icon={Sparkles}
-                  label={detailParsed.summary ? "Обновить" : "Сделать Summary"}
-                  onClick={doGenerateSummaryForDetail}
-                  loading={detailSummaryStatus === "loading"}
-                  disabled={!detailParsed.segments.length}
-                />
-              </div>
+          {detailMeta && (
+            <div className="flex items-center gap-2 px-1 mt-2">
+              <span className="text-sm font-semibold">{detailMeta.date || detailMeta.filename.slice(0, 10)}</span>
+              {detailMeta.duration_min > 0 && (
+                <span className="flex items-center gap-1 text-xs text-muted"><Clock className="h-3 w-3" />{detailMeta.duration_min} мин</span>
+              )}
             </div>
-            {detailParsed.summary && !detailSummaryCollapsed && (
-              <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80 border-t border-white/[0.06] pt-3">
-                {detailParsed.summary}
-              </div>
-            )}
-          </div>
+          )}
 
-          {/* Transcript — fills all remaining space */}
-          <div className="flex-1 overflow-y-auto px-1 py-2">
-            {detailParsed.segments.length > 0 && (
-              <div className="flex justify-end mb-3">
-                <CopyBtn text={segmentsToText(detailParsed.segments)} />
+          {detailLoading ? (
+            <div className="flex flex-1 items-center justify-center gap-2 text-muted text-sm mt-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Загружаю…
+            </div>
+          ) : (
+            <>
+              {/* Summary — collapsible bar */}
+              <div className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5 mt-2">
+                <div className="flex items-center justify-between">
+                  <button
+                    className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted"
+                    onClick={() => setDetailSummaryCollapsed((c) => !c)}
+                    disabled={!detailParsed.summary}
+                  >
+                    Summary
+                    {detailParsed.summary && (
+                      detailSummaryCollapsed
+                        ? <ChevronDown className="h-3.5 w-3.5" />
+                        : <ChevronUp className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {detailSummaryStatus === "error" && (
+                      <span className="text-[10px] text-red-400">{detailSummaryError}</span>
+                    )}
+                    {detailParsed.summary && <CopyBtn text={detailParsed.summary} />}
+                    <ActionBtn
+                      icon={Sparkles}
+                      label={detailParsed.summary ? "Обновить" : "Сделать Summary"}
+                      onClick={doGenerateSummaryForDetail}
+                      loading={detailSummaryStatus === "loading"}
+                      disabled={!detailParsed.segments.length}
+                    />
+                  </div>
+                </div>
+                {detailParsed.summary && !detailSummaryCollapsed && (
+                  <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80 border-t border-white/[0.06] pt-3">
+                    {detailParsed.summary}
+                  </div>
+                )}
               </div>
-            )}
-            <TranscriptView segments={detailParsed.segments} />
-          </div>
+
+              {/* Transcript — 16px ниже summary, копировать внизу-слева */}
+              <div className="flex-1 flex flex-col overflow-hidden mt-4">
+                <div className="flex-1 overflow-y-auto px-1">
+                  <TranscriptView segments={detailParsed.segments} />
+                </div>
+                {detailParsed.segments.length > 0 && (
+                  <div className="px-1 pt-2">
+                    <CopyBtn text={segmentsToText(detailParsed.segments)} />
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
