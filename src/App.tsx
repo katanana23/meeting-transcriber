@@ -82,20 +82,20 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
 
 const HADES_TITLES = [
   "Записи встреч",
-  "Кто что сказал?",
-  "Всё под контролем",
-  "Договорились —\nзафиксировано",
-  "Ни слова\nне пропадёт",
-  "А кто\nза это берётся?",
-  "Это точно\nобсуждали",
-  "Следующий шаг —\nза тобой",
-  "Транскрипт\nне обманет",
-  "Минуты встречи\nготовы",
-  "Кто принял\nрешение?",
-  "Вспомнить всё\nможно позже",
-  "Слова —\nэто договор",
-  "Итоги встречи\nуже здесь",
-  "Запись шла,\nничто не ушло",
+  "Гениально. Я знаю —\nсам себе говорю",
+  "Это мой план.\nОн всегда работает",
+  "Спокойно. Я контролирую\nабсолютно всё",
+  "Даже мёртвые\nмне рукоплещут",
+  "Восемнадцать лет\nожидания. Стоило",
+  "Я горю?\nДа, это фича",
+  "Ничто не ускользнёт\nот взгляда Аида",
+  "Все слова —\nмои. Записано",
+  "Кто молодец?\nЯ молодец",
+  "Тёмная сторона\nтоже ведёт протокол",
+  "Боги отдыхают,\nАид берёт записи",
+  "Харизма, интеллект,\nи скромность тоже",
+  "Подземный мир\nодобряет транскрипт",
+  "Грандиозно. Потрясающе.\nЭто я придумал",
 ];
 
 function BlurText({ text, className }: { text: string; className?: string }) {
@@ -128,7 +128,7 @@ function BlurText({ text, className }: { text: string; className?: string }) {
 function HercAvatar({ idx: _idx, gifs: _gifs }: { idx: number; gifs: string[] }) {
   return (
     <div style={{
-      width: 40, height: 40, borderRadius: 99, overflow: "hidden", flexShrink: 0,
+      width: 48, height: 48, borderRadius: 99, overflow: "hidden", flexShrink: 0,
       animation: "glowPulse 2.8s ease-in-out infinite",
     }}>
       <img
