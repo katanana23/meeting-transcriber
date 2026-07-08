@@ -125,35 +125,17 @@ function BlurText({ text, className }: { text: string; className?: string }) {
   );
 }
 
-// GIF files go in public/gifs/ — drop any Hercules GIF there with these names
-function HercAvatar({ idx, gifs }: { idx: number; gifs: string[] }) {
-  const [failed, setFailed] = useState(false);
-  const src = gifs.length > 0 ? gifs[idx % gifs.length] : "";
-
-  useEffect(() => { setFailed(false); }, [src]);
-
+function HercAvatar({ idx: _idx, gifs: _gifs }: { idx: number; gifs: string[] }) {
   return (
     <div style={{
       width: 40, height: 40, borderRadius: 99, overflow: "hidden", flexShrink: 0,
-      background: "linear-gradient(135deg, #2d1b69 0%, #1a0e4a 100%)",
       animation: "glowPulse 2.8s ease-in-out infinite",
     }}>
-      {!src || failed ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z"
-              fill="#a78bfa" stroke="#7c3aed" strokeWidth="0.5" />
-          </svg>
-        </div>
-      ) : (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          onError={() => setFailed(true)}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-      )}
+      <img
+        src="/avatar.png"
+        alt=""
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
     </div>
   );
 }
