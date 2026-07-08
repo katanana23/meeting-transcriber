@@ -121,33 +121,20 @@ function BlurText({ text, className }: { text: string; className?: string }) {
 }
 
 // GIF files go in public/gifs/ — drop any Hercules GIF there with these names
-const HERCULES_GIFS = [
-  "/gifs/hades.gif",
-  "/gifs/pain-panic.gif",
-  "/gifs/styx.gif",
-  "/gifs/meg.gif",
-  "/gifs/zeus.gif",
-  "/gifs/charon.gif",
-  "/gifs/hercules.gif",
-  "/gifs/pegasus.gif",
-  "/gifs/hydra.gif",
-  "/gifs/muses.gif",
-];
-
-function HercAvatar({ idx }: { idx: number }) {
+function HercAvatar({ idx, gifs }: { idx: number; gifs: string[] }) {
   const [failed, setFailed] = useState(false);
-  const src = HERCULES_GIFS[idx % HERCULES_GIFS.length];
+  const src = gifs.length > 0 ? gifs[idx % gifs.length] : "";
 
-  useEffect(() => { setFailed(false); }, [idx]);
+  useEffect(() => { setFailed(false); }, [src]);
 
   return (
     <div style={{
-      width: 32, height: 32, borderRadius: 99, overflow: "hidden", flexShrink: 0,
+      width: 40, height: 40, borderRadius: 99, overflow: "hidden", flexShrink: 0,
       border: "1.5px solid rgba(120,90,240,0.35)",
       background: "#0e0820",
     }}>
-      {failed ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+      {!src || failed ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
           🔥
         </div>
       ) : (
@@ -388,6 +375,21 @@ export default function App() {
 
   const [view,           setView]           = useState<AppView>("home");
   const [showSettings,   setShowSettings]   = useState(false);
+  const [giphyGifs,      setGiphyGifs]      = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=hercules+disney+1997&limit=15&rating=g")
+      .then((r) => r.json())
+      .then((data) => {
+        const urls: string[] = (data.data || [])
+          .map((g: { images?: { fixed_height_small?: { url?: string }; downsized_small?: { url?: string } } }) =>
+            g.images?.fixed_height_small?.url || g.images?.downsized_small?.url
+          )
+          .filter(Boolean);
+        if (urls.length) setGiphyGifs(urls.sort(() => Math.random() - 0.5));
+      })
+      .catch(() => {});
+  }, []);
   const [devices,        setDevices]        = useState<string[]>([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
 
@@ -498,7 +500,7 @@ export default function App() {
       ) : (
         <div className="flex items-center gap-3">
           {left}
-          {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} />}
+          {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} gifs={giphyGifs} />}
           <h1 className="text-[20px] font-bold tracking-tight" style={{ lineHeight: "21px" }}>
             {titleNode ?? <span>Записи встреч</span>}
           </h1>
@@ -560,7 +562,7 @@ export default function App() {
       </div>
 
       {/* Fixed bottom button — скрыт когда настройки открыты */}
-      <div className={cn("fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-4 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none", showSettings && "hidden")}>
+      <div className={cn("fixed bottom-0 left-0 right-0 flex justify-center pb-6 pointer-events-none", showSettings && "hidden")}>
         <button
           onClick={() => { setRecStatus("idle"); setView("recording"); }}
           className="pointer-events-auto flex items-center gap-2.5 rounded-2xl bg-[#1a6ef5] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[#1560d8] active:scale-[0.98] transition-all"
