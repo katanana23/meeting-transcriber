@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { DisclosureAnimated } from "@/components/core/disclosure";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,20 +83,20 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
 
 const HADES_TITLES = [
   "Записи встреч",
-  "Гениально. Я знаю —\nсам себе говорю",
-  "Это мой план.\nОн всегда работает",
-  "Спокойно. Я контролирую\nабсолютно всё",
-  "Даже мёртвые\nмне рукоплещут",
-  "Восемнадцать лет\nожидания. Стоило",
-  "Я горю?\nДа, это фича",
-  "Ничто не ускользнёт\nот взгляда Аида",
-  "Все слова —\nмои. Записано",
-  "Кто молодец?\nЯ молодец",
-  "Тёмная сторона\nтоже ведёт протокол",
-  "Боги отдыхают,\nАид берёт записи",
-  "Харизма, интеллект,\nи скромность тоже",
-  "Подземный мир\nодобряет транскрипт",
-  "Грандиозно. Потрясающе.\nЭто я придумал",
+  "Я горю яростью.\nНо это мой стиль",
+  "Ошибок нет.\nЕсть мои решения",
+  "Грандиозный план.\nМой. Естественно",
+  "Подземный мир ждёт.\nТы не торопись",
+  "Пейн! Паника!\nЗаписывайте за мной",
+  "Спокойно. Всё\nпод моим контролем",
+  "Сделка заключена.\nМелкий шрифт — мой",
+  "Восемнадцать лет\nждал. Стоило того",
+  "Критика? Не слышу.\nСлышу аплодисменты",
+  "Мрак, тени, власть.\nМой дресс-код",
+  "Огонь в волосах?\nПросто высокий IQ",
+  "Геркулес бы тут\nзатупил. Я — нет",
+  "Боги Олимпа\nне понимают гениев",
+  "Я был лучшим\nдо всяких трендов",
 ];
 
 function BlurText({ text, className }: { text: string; className?: string }) {
@@ -594,21 +595,20 @@ export default function App() {
           ) : (
             <>
               {/* Summary — collapsible bar */}
-              <div className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5 mt-2">
+              <div
+                className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5 mt-2 cursor-pointer"
+                onClick={() => detailParsed.summary && setDetailSummaryCollapsed((c) => !c)}
+              >
                 <div className="flex items-center justify-between">
-                  <button
-                    className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted"
-                    onClick={() => setDetailSummaryCollapsed((c) => !c)}
-                    disabled={!detailParsed.summary}
-                  >
+                  <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
                     Summary
                     {detailParsed.summary && (
                       detailSummaryCollapsed
                         ? <ChevronDown className="h-3.5 w-3.5" />
                         : <ChevronUp className="h-3.5 w-3.5" />
                     )}
-                  </button>
-                  <div className="flex items-center gap-1.5">
+                  </span>
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     {detailSummaryStatus === "error" && (
                       <span className="text-[10px] text-red-400">{detailSummaryError}</span>
                     )}
@@ -622,11 +622,11 @@ export default function App() {
                     />
                   </div>
                 </div>
-                {detailParsed.summary && !detailSummaryCollapsed && (
+                <DisclosureAnimated open={!!detailParsed.summary && !detailSummaryCollapsed}>
                   <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80 border-t border-white/[0.06] pt-3">
                     {detailParsed.summary}
                   </div>
-                )}
+                </DisclosureAnimated>
               </div>
 
               {/* Transcript — 16px ниже summary, копировать внизу-слева */}
@@ -677,19 +677,18 @@ export default function App() {
 
       {/* Summary — always-visible bar when transcript done */}
       {recStatus === "done" && (
-        <div className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5">
+        <div
+          className="rounded-xl border border-white/[0.07] bg-card px-4 py-2.5 cursor-pointer"
+          onClick={() => summaryStatus === "done" && setSummaryCollapsed((c) => !c)}
+        >
           <div className="flex items-center justify-between">
-            <button
-              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted"
-              onClick={() => setSummaryCollapsed((c) => !c)}
-              disabled={summaryStatus !== "done"}
-            >
+            <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
               Summary
               {summaryStatus === "done" && (
                 summaryCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />
               )}
-            </button>
-            <div className="flex items-center gap-1.5">
+            </span>
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
               {summaryStatus === "error" && (
                 <span className="text-[10px] text-red-400 max-w-[180px] truncate">{summaryError}</span>
               )}
@@ -704,11 +703,11 @@ export default function App() {
               />
             </div>
           </div>
-          {summaryStatus === "done" && !summaryCollapsed && (
+          <DisclosureAnimated open={summaryStatus === "done" && !summaryCollapsed}>
             <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80 border-t border-white/[0.06] pt-3">
               {summary}
             </div>
-          )}
+          </DisclosureAnimated>
         </div>
       )}
 
