@@ -82,15 +82,20 @@ function ActionBtn({ icon: Icon, label, onClick, disabled, loading, sublabel: _s
 
 const HADES_TITLES = [
   "Записи встреч",
-  "Пейн и Паника\nснова всё сломали",
-  "Стикс вышел\nиз берегов снова",
-  "Мой план\nбыл так хорош",
-  "Зевс испортил\nвсё как обычно",
-  "Харон ушёл\nна перерыв опять",
-  "Подземный мир\nждёт вас всех",
-  "Мегара знает\nАид волнуется",
-  "Гидра выросла\nопять без спроса",
-  "Горим ярко\nкак моя карьера",
+  "Кто что сказал?",
+  "Всё под контролем",
+  "Договорились —\nзафиксировано",
+  "Ни слова\nне пропадёт",
+  "А кто\nза это берётся?",
+  "Это точно\nобсуждали",
+  "Следующий шаг —\nза тобой",
+  "Транскрипт\nне обманет",
+  "Минуты встречи\nготовы",
+  "Кто принял\nрешение?",
+  "Вспомнить всё\nможно позже",
+  "Слова —\nэто договор",
+  "Итоги встречи\nуже здесь",
+  "Запись шла,\nничто не ушло",
 ];
 
 function BlurText({ text, className }: { text: string; className?: string }) {
@@ -107,8 +112,8 @@ function BlurText({ text, className }: { text: string; className?: string }) {
                 display: "inline-block",
                 whiteSpace: "pre",
                 opacity: 0,
-                animation: "blurIn 0.8s forwards",
-                animationDelay: `${i * 0.05}s`,
+                animation: "fadeUp 0.3s ease-out forwards",
+                animationDelay: `${i * 0.035}s`,
               }}>
                 {char}
               </span>
@@ -130,12 +135,15 @@ function HercAvatar({ idx, gifs }: { idx: number; gifs: string[] }) {
   return (
     <div style={{
       width: 40, height: 40, borderRadius: 99, overflow: "hidden", flexShrink: 0,
-      border: "1.5px solid rgba(120,90,240,0.35)",
-      background: "#0e0820",
+      background: "linear-gradient(135deg, #2d1b69 0%, #1a0e4a 100%)",
+      animation: "glowPulse 2.8s ease-in-out infinite",
     }}>
       {!src || failed ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-          🔥
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z"
+              fill="#a78bfa" stroke="#7c3aed" strokeWidth="0.5" />
+          </svg>
         </div>
       ) : (
         <img
@@ -514,12 +522,12 @@ export default function App() {
   // HOME
   // ══════════════════════════════════════
   if (view === "home") return (
-    <div className="flex h-screen flex-col p-5 pb-28">
+    <div className="flex h-screen flex-col p-5 pb-24">
       <Header avatarIdx={titleIdx} titleNode={<BlurText key={titleIdx} text={HADES_TITLES[titleIdx]} />} />
       {showSettings && <SettingsPanel {...{ micHint, setMicHint, sysHint, setSysHint, vaultDir, setVaultDir, modelPath, setModelPath, devices, devicesLoading }} />}
 
       {/* List — скрыт когда настройки открыты */}
-      <div className={cn("flex-1 overflow-y-auto space-y-2 pr-0.5 mt-5", showSettings && "hidden")}>
+      <div className={cn("flex-1 overflow-y-auto overflow-x-hidden space-y-2 mt-5", showSettings && "hidden")}>
         {meetingsLoading && (
           <div className="flex items-center justify-center gap-2 py-12 text-muted text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> Загружаю…
@@ -537,8 +545,8 @@ export default function App() {
             onClick={() => openMeeting(m)}
             style={{
               opacity: 0,
-              animation: "blurIn 0.5s forwards",
-              animationDelay: `${idx * 0.06}s`,
+              animation: "fadeUp 0.22s ease-out forwards",
+              animationDelay: `${idx * 0.07}s`,
             }}
             className={cn(
               "w-full text-left rounded-xl border border-white/[0.07] bg-card px-4 py-3.5",
@@ -561,6 +569,11 @@ export default function App() {
         ))}
       </div>
 
+      {/* Fade overlay над кнопкой */}
+      {!showSettings && (
+        <div className="pointer-events-none fixed bottom-0 left-0 right-0 h-24"
+          style={{ background: "linear-gradient(to top, #0c0c0f 35%, transparent)" }} />
+      )}
       {/* Fixed bottom button — скрыт когда настройки открыты */}
       <div className={cn("fixed bottom-0 left-0 right-0 flex justify-center pb-6 pointer-events-none", showSettings && "hidden")}>
         <button
