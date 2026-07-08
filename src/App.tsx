@@ -492,7 +492,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           {left}
           {avatarIdx !== undefined && <HercAvatar idx={avatarIdx} gifs={giphyGifs} />}
-          <h1 className="text-[20px] font-bold tracking-tight" style={{ lineHeight: "21px" }}>
+          <h1 className="text-[20px] font-medium tracking-tight" style={{ lineHeight: "23px" }}>
             {titleNode ?? <span>Записи встреч</span>}
           </h1>
         </div>
